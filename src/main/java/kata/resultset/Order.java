@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.logging.Logger;
 
 public class Order {
+
+    private static final Logger LOGGER = Logger.getLogger(Order.class.getName());
 
     public String queryReceiverName(String orderId) {
         String receiverName = "";
@@ -21,15 +24,20 @@ public class Order {
             preparedStatement.setString(1, orderId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
+            int count = 0;
             if (resultSet.next() == false) {
-                receiverName = "";
-            } else {
-                do {
-                    receiverName = resultSet.getString(1);
-                    if (receiverName == null) {
-                        receiverName = "";
-                    }
-                } while (resultSet.next());
+                LOGGER.info("no records for querying receiver name of order id " + orderId);
+                return "";
+            }
+            do {
+                receiverName = resultSet.getString(1);
+                if (receiverName == null) {
+                    receiverName = "";
+                }
+                count++;
+            } while (resultSet.next());
+            if (count >= 2) {
+                LOGGER.info("there are more than 2 receiver names for order id " + orderId);
             }
 
         } catch (Exception e) {
