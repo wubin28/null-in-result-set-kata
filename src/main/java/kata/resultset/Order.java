@@ -2,6 +2,8 @@ package kata.resultset;
 
 import java.sql.*;
 
+import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
+
 public class Order {
 
     public String queryReceiverName(String orderId) throws SQLException {
@@ -16,9 +18,19 @@ public class Order {
             resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next() == false) {
+                LOGGER.info("no records for querying receiver name of order id " + orderId);
                 return "";
             }
-            return resultSet.getString(1) == null ? "" : resultSet.getString(1);
+            String receiverName = "";
+            int count = 0;
+            do {
+                receiverName = resultSet.getString(1) == null ? "" : resultSet.getString(1);
+                count++;
+            } while (resultSet.next());
+            if (count >= 2) {
+                LOGGER.info("there are more than 2 receiver names for order id " + orderId);
+            }
+            return receiverName;
         } finally {
             if (resultSet != null) {
                 resultSet.close();
