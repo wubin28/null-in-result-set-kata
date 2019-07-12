@@ -18,7 +18,7 @@ public class Order {
             if (resultSet.next() == false) {
                 return "";
             }
-            return resultSet.getString(1);
+            return resultSet.getString(1) == null ? "" : resultSet.getString(1);
         } finally {
             if (resultSet != null) {
                 resultSet.close();
