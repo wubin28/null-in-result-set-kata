@@ -6,10 +6,11 @@ import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 
 public class Order {
 
-    public String queryReceiverName(String orderId) throws SQLException {
+    public String queryReceiverName(String orderId) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
+        String receiverName = "";
         try {
             connection = DriverManager.getConnection("jdbc:sqlserver://localhost:42588;", "admin", "root");
             preparedStatement =
@@ -21,7 +22,6 @@ public class Order {
                 LOGGER.info("no records for querying receiver name of order id " + orderId);
                 return "";
             }
-            String receiverName = "";
             int count = 0;
             do {
                 receiverName = resultSet.getString(1) == null ? "" : resultSet.getString(1);
@@ -30,17 +30,31 @@ public class Order {
             if (count >= 2) {
                 LOGGER.info("there are more than 2 receiver names for order id " + orderId);
             }
-            return receiverName;
+        } catch (SQLException e) {
+            LOGGER.warning(e.getSQLState() + e.getMessage());
         } finally {
             if (resultSet != null) {
-                resultSet.close();
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    LOGGER.warning(e.getSQLState() + e.getMessage());
+                }
             }
             if (preparedStatement != null) {
-                preparedStatement.close();
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    LOGGER.warning(e.getSQLState() + e.getMessage());
+                }
             }
             if (connection != null) {
-                connection.close();
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    LOGGER.warning(e.getSQLState() + e.getMessage());
+                }
             }
         }
+        return receiverName;
     }
 }
