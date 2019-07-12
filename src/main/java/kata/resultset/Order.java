@@ -1,49 +1,34 @@
 package kata.resultset;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.logging.Logger;
+import java.sql.*;
 
 public class Order {
 
-    private static final Logger LOGGER = Logger.getLogger(Order.class.getName());
-
-    public String queryReceiverName(String orderId) {
-        String receiverName = "";
+    public String queryReceiverName(String orderId) throws SQLException {
         Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         try {
-
-            String url = "jdbc:sqlserver://localhost:42588;";
-
-            connection = DriverManager.getConnection(url, "admin", "root");
-
-            PreparedStatement preparedStatement =
+            connection = DriverManager.getConnection("jdbc:sqlserver://localhost:42588;", "admin", "root");
+            preparedStatement =
                     connection.prepareStatement("select receiver_name from orders where order_id = ?");
             preparedStatement.setString(1, orderId);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
 
-            int count = 0;
             if (resultSet.next() == false) {
-                LOGGER.info("no records for querying receiver name of order id " + orderId);
                 return "";
             }
-            do {
-                receiverName = resultSet.getString(1);
-                if (receiverName == null) {
-                    receiverName = "";
-                }
-                count++;
-            } while (resultSet.next());
-            if (count >= 2) {
-                LOGGER.info("there are more than 2 receiver names for order id " + orderId);
+            return resultSet.getString(1);
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
         }
-
-        return receiverName;
     }
 }
